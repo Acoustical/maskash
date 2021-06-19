@@ -1,13 +1,33 @@
 package zkproofs
 
 import (
-	"fmt"
+	"github.com/Acoustical/maskash/common"
 	"github.com/Acoustical/maskash/crypto"
 	"github.com/Acoustical/maskash/errors"
 	"golang.org/x/crypto/bn256"
 	"math/big"
-	"os"
 )
+
+type LinearEquationZK struct {
+	*LinearEquationProof
+	*LinearEquationPrivate
+}
+
+func (zk *LinearEquationZK) Init() *LinearEquationZK{
+	zk.LinearEquationProof = new(LinearEquationProof)
+	zk.LinearEquationPrivate = new(LinearEquationPrivate)
+	zk.LinearEquationPublic = new(LinearEquationPublic)
+	return zk
+}
+
+func (zk *LinearEquationZK) Proof() (err error) {
+	zk.LinearEquationProof, err = new(LinearEquationProof).ProofGen(zk.LinearEquationPrivate)
+	return
+}
+
+func (zk *LinearEquationZK) Check() bool {
+	return zk.LinearEquationProof.ProofCheck(zk.LinearEquationPublic)
+}
 
 // LinearEquationPublic contains the linear equation public variables
 type LinearEquationPublic struct {
@@ -17,43 +37,40 @@ type LinearEquationPublic struct {
 	g []*crypto.Generator
 }
 
-// SetPublic init lep
-func (lep *LinearEquationPublic) SetPublic(a []*big.Int, b *big.Int, y *crypto.Commitment, g []*crypto.Generator) (*LinearEquationPublic, error) {
+// SetPublic init public
+func (public *LinearEquationPublic) SetPublic(a []*big.Int, b *big.Int, y *crypto.Commitment, g []*crypto.Generator) (*LinearEquationPublic, error) {
 	aLen := len(a)
 	gLen := len(g)
 	if aLen != gLen {
 		return nil, errors.NewLengthNotMatchError(aLen, gLen)
 	}
-	lep.y = y
-	lep.b = b
-	lep.a = a
-	lep.g = g
-	return lep, nil
+	public.a, public.b, public.y, public.g = a, b, y, g
+	return public, nil
 }
 
 // public function
-func (lep *LinearEquationPublic) public() {}
+func (public *LinearEquationPublic) public() {}
 
 // LinearEquationPrivate contains the linear equation public variables
 type LinearEquationPrivate struct {
-	LinearEquationPublic
+	*LinearEquationPublic
 	x []*big.Int
 }
 
-// SetPrivate init lep
-func (lep *LinearEquationPrivate) SetPrivate(a []*big.Int, b *big.Int, x []*big.Int, y *crypto.Commitment, g []*crypto.Generator) (*LinearEquationPrivate, error) {
+// SetPrivate init public
+func (private *LinearEquationPrivate) SetPrivate(a []*big.Int, b *big.Int, x []*big.Int, y *crypto.Commitment, g []*crypto.Generator) (*LinearEquationPrivate, error) {
 	aLen := len(a)
 	xLen := len(x)
 	if aLen != xLen {
 		return nil, errors.NewLengthNotMatchError(aLen, xLen)
 	}
-	lep.x = x
-	_, err := lep.SetPublic(a, b, y, g)
-	return lep, err
+	private.x = x
+	_, err := private.SetPublic(a, b, y, g)
+	return private, err
 }
 
 // private function
-func (lep *LinearEquationPrivate) private() {}
+func (private *LinearEquationPrivate) private() {}
 
 // LinearEquationProof contains the generated linear equation proof variables
 type LinearEquationProof struct {
@@ -63,6 +80,7 @@ type LinearEquationProof struct {
 
 // ProofGen generates linear equation proof
 func (proof *LinearEquationProof) ProofGen(private *LinearEquationPrivate) (*LinearEquationProof, error) {
+
 	Len := len(private.a)
 	hashVar := make([]crypto.HashVariable, Len+2)
 	for i := 0; i < Len; i++ {
@@ -73,7 +91,7 @@ func (proof *LinearEquationProof) ProofGen(private *LinearEquationPrivate) (*Lin
 	// calculate v
 	v := make([]*big.Int, Len)
 	ss := make([]bool, Len)
-	P1 := new(big.Int).Sub(bn256.Order, big.NewInt(1))
+	P := bn256.Order
 	ssnum := 0
 	for i, ai := range private.a {
 		if ai.Cmp(big.NewInt(0)) == 0 {
@@ -102,9 +120,9 @@ func (proof *LinearEquationProof) ProofGen(private *LinearEquationPrivate) (*Lin
 		} else {
 			if ssnum == 1 {
 				Ai := new(big.Int).Set(ai)
-				Ai.ModInverse(Ai, P1)
+				Ai.ModInverse(Ai, P)
 				v[i] = new(big.Int).Mul(last, Ai)
-				v[i].Mod(v[i], P1)
+				v[i].Mod(v[i], P)
 				ssnum--
 			} else {
 				v[i] = rbi[line]
@@ -112,7 +130,7 @@ func (proof *LinearEquationProof) ProofGen(private *LinearEquationPrivate) (*Lin
 				ssnum--
 				buf := new(big.Int).Mul(ai, v[i])
 				last.Sub(last, buf)
-				last.Mod(last, P1)
+				last.Mod(last, P)
 			}
 		}
 	}
@@ -133,7 +151,7 @@ func (proof *LinearEquationProof) ProofGen(private *LinearEquationPrivate) (*Lin
 	for i := 0; i < Len; i++ {
 		cx := new(big.Int).Mul(c, private.x[i])
 		cx.Sub(v[i], cx)
-		cx.Mod(cx, P1)
+		cx.Mod(cx, P)
 		proof.s[i] = cx
 	}
 
@@ -154,11 +172,7 @@ func (proof *LinearEquationProof) ProofCheck(public *LinearEquationPublic) bool 
 	c := crypto.Hash_(hashVar...).BigInt()
 
 	// check t
-	t, err := new(crypto.Commitment).MultiSet(public.g, proof.s)
-	if err != nil {
-		_ = fmt.Errorf("%s", err)
-		os.Exit(1)
-	}
+	t, _ := new(crypto.Commitment).MultiSet(public.g, proof.s)
 
 	yc := new(crypto.Commitment).Mul(public.y, c)
 	t.Add(yc)
@@ -169,13 +183,13 @@ func (proof *LinearEquationProof) ProofCheck(public *LinearEquationPublic) bool 
 
 	// check s
 	zero := big.NewInt(0)
-	P1 := new(big.Int).Sub(bn256.Order, big.NewInt(1))
+	P := bn256.Order
 	as := new(big.Int).Mul(c, public.b)
-	as.Mod(as, P1)
+	as.Mod(as, P)
 	for i := 0; i < Len; i++ {
 		aisi := new(big.Int).Mul(public.a[i], proof.s[i])
 		as.Add(as, aisi)
-		as.Mod(as, P1)
+		as.Mod(as, P)
 	}
 
 	if as.Cmp(zero) == 0 {
@@ -183,4 +197,43 @@ func (proof *LinearEquationProof) ProofCheck(public *LinearEquationPublic) bool 
 	} else {
 		return false
 	}
+}
+
+// Bytes returns the bytes encode of proof
+func (proof *LinearEquationProof) Bytes() []byte {
+	sLen := len(proof.s)
+	sBytes := common.Bn256ZqBits / common.ByteBits
+	totalBits := len(proof.s) * common.Bn256ZqBits + common.Bn256PointBits
+	totalBytes := totalBits / common.ByteBits
+
+	ret := make([]byte, totalBytes)
+
+	for i := 0; i < sLen; i++ {
+		sByte := proof.s[i].Bytes()
+		copy(ret[(i+1)*sBytes-len(sByte):], sByte)
+	}
+
+	tByte := proof.t.Bytes()
+	copy(ret[totalBytes-len(tByte):], tByte)
+
+	return ret
+}
+
+// SetBytes sets proof with the bytes b
+func (proof *LinearEquationProof) SetBytes(b []byte) error{
+	totalBytes := len(b)
+	sBytes := common.Bn256ZqBits / common.ByteBits
+	tBytes := common.Bn256PointBits / common.ByteBits
+
+	if totalBytes < tBytes || (totalBytes - tBytes) % sBytes != 0 {
+		return errors.NewWrongInputLength(totalBytes)
+	}
+
+	sLen := (totalBytes - tBytes) / sBytes
+	proof.s = make([]*big.Int, sLen)
+	for i := 0; i < sLen; i++ {
+		proof.s[i] = new(big.Int).SetBytes(b[i*sBytes:(i+1)*sBytes])
+	}
+	proof.t = new(crypto.Commitment).SetBytes(b[sLen*sBytes:])
+	return nil
 }

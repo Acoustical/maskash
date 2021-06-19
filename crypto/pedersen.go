@@ -2,6 +2,7 @@ package crypto
 
 import (
 	"crypto/rand"
+	"github.com/Acoustical/maskash/errors"
 	"golang.org/x/crypto/bn256"
 	"math/big"
 )
@@ -39,7 +40,7 @@ func (g *Generator) Init(k *big.Int) *Generator {
 
 // Mul sets Generator g to ka and returns g
 func (g *Generator) Mul(a *Generator, k *big.Int) *Generator {
-	g.G1.ScalarMult(a.G1, k)
+	g.G1 = new(bn256.G1).ScalarMult(a.G1, k)
 	return g
 }
 
@@ -64,7 +65,7 @@ func (g *Generator) Bytes() []byte {
 // SetBytes sets c to the result of converting the output of Marshal back into a
 // group element and then returns c
 func (g *Generator) SetBytes(b []byte) *Generator {
-	g.G1.Unmarshal(b)
+	g.G1, _ = new(bn256.G1).Unmarshal(b)
 	return g
 }
 
@@ -85,12 +86,20 @@ func (c *Commitment) Set(g *Generator, h *Generator, v *big.Int) (*Commitment, *
 	return c, r, nil
 }
 
+// FixedSet sets c to vg+rh returns c, r, err
+func (c *Commitment) FixedSet(g *Generator, h *Generator, v *big.Int, r *big.Int) *Commitment {
+	p0 := g.MulBy(v).G1
+	p1 := h.MulBy(r).G1
+	c.G1 = new(bn256.G1).Add(p0, p1)
+	return c
+}
+
 // MultiSet sets c to sum(gv), returns c, err
 func (c *Commitment) MultiSet(g []*Generator, v []*big.Int) (*Commitment, error) {
 	gLen := len(g)
 	vLen := len(v)
 	if gLen != vLen {
-		return nil, zkproofs.NewLengthNotMatchError(gLen, vLen)
+		return nil, errors.NewLengthNotMatchError(gLen, vLen)
 	}
 	c.SetInt(big.NewInt(0))
 	for i := 0; i < gLen; i++ {
@@ -122,7 +131,7 @@ func (c *Commitment) Add(a *Commitment) *Commitment {
 
 // AddGenerator sets c to c+a and returns c
 func (c *Commitment) AddGenerator(g *Generator) *Commitment {
-	c.G1.Add(c.G1, g.G1)
+	c.G1 = new(bn256.G1).Add(c.G1, g.G1)
 	return c
 }
 
@@ -134,7 +143,7 @@ func (c *Commitment) Neg() *Commitment {
 
 // Mul sets c to kc and returns c
 func (c *Commitment) Mul(cm *Commitment, k *big.Int) *Commitment {
-	c.G1.ScalarMult(cm.G1, k)
+	c.G1 = new(bn256.G1).ScalarMult(cm.G1, k)
 	return c
 }
 
@@ -152,7 +161,7 @@ func (c *Commitment) Bytes() []byte {
 // SetBytes sets c to the result of converting the output of Marshal back into a
 // group element and then returns c
 func (c *Commitment) SetBytes(b []byte) *Commitment {
-	c.G1.Unmarshal(b)
+	c.G1, _ = new(bn256.G1).Unmarshal(b)
 	return c
 }
 
