@@ -3,23 +3,16 @@ package zkproofs
 import (
 	"fmt"
 	"github.com/Acoustical/maskash/crypto"
+	"github.com/Acoustical/maskash/errors"
 	"golang.org/x/crypto/bn256"
 	"math/big"
-	"os"
 	"testing"
 )
-
-func Handle(err error) {
-	if err != nil {
-		fmt.Errorf("%s", err)
-		os.Exit(1)
-	}
-}
 
 func TestLinearEquation(t *testing.T) {
 	// Generate X A G
 	xa, err := crypto.RandomZq(12)
-	Handle(err)
+	errors.Handle(err)
 	x := xa[:4]
 	fmt.Printf("Values of X\n%x\n\n", x)
 	a := xa[4:8]
@@ -32,7 +25,7 @@ func TestLinearEquation(t *testing.T) {
 
 	// Calculate Y
 	y, err := new(crypto.Commitment).MultiSet(g, x)
-	Handle(err)
+	errors.Handle(err)
 	fmt.Printf("Values of Y\n%s\n\n", y.String())
 
 	// Calculate B
@@ -47,11 +40,11 @@ func TestLinearEquation(t *testing.T) {
 
 	zkProver := new(LinearEquationZK).Init()
 	_, err = zkProver.SetPrivate(a, b, x, y, g)
-	Handle(err)
+	errors.Handle(err)
 
 	fmt.Printf("Prover generate Proof...\n")
 	err = zkProver.Proof()
-	Handle(err)
+	errors.Handle(err)
 
 	proofBytes := zkProver.Bytes()
 	fmt.Printf("Proof Infomation:\n%x\n\n", proofBytes)
@@ -60,9 +53,9 @@ func TestLinearEquation(t *testing.T) {
 	fmt.Printf("Verifier check the Proof...\n")
 	zkVerifier := new(LinearEquationZK).Init()
 	_, err = zkVerifier.SetPublic(a, b, y, g)
-	Handle(err)
+	errors.Handle(err)
 	err = zkVerifier.SetBytes(proofBytes)
-	Handle(err)
+	errors.Handle(err)
 
 	if zkVerifier.Check() {
 		fmt.Println("Linear Equation Proof check success.")

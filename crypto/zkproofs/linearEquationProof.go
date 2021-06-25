@@ -14,7 +14,7 @@ type LinearEquationZK struct {
 }
 
 func (zk *LinearEquationZK) Init() *LinearEquationZK{
-	zk.LinearEquationProof = new(LinearEquationProof)
+	zk.LinearEquationProof= new(LinearEquationProof)
 	zk.LinearEquationPrivate = new(LinearEquationPrivate)
 	zk.LinearEquationPublic = new(LinearEquationPublic)
 	return zk
@@ -175,7 +175,7 @@ func (proof *LinearEquationProof) ProofCheck(public *LinearEquationPublic) bool 
 	t, _ := new(crypto.Commitment).MultiSet(public.g, proof.s)
 
 	yc := new(crypto.Commitment).Mul(public.y, c)
-	t.Add(yc)
+	t.AddBy(yc)
 
 	if !t.Cmp(proof.t) {
 		return false
