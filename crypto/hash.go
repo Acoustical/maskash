@@ -5,9 +5,7 @@ import (
 	"math/big"
 )
 
-type HashVariable interface {
-	Bytes() []byte
-}
+type HashVariable interface {Bytes() []byte}
 
 type Hash [32]byte
 
@@ -22,14 +20,8 @@ func Hash_(args ...HashVariable) Hash {
 	return h
 }
 
-func (h Hash) Cmp(h0 Hash) bool {
-	return h == h0
-}
+func (h Hash) Cmp(h0 Hash) bool {return h == h0}
 
-func (h Hash) Bytes() []byte {
-	return h[:]
-}
+func (h Hash) Bytes() []byte {return h[:]}
 
-func (h Hash) BigInt() *big.Int {
-	return new(big.Int).SetBytes(h[:])
-}
+func (h Hash) BigInt() *big.Int {return new(big.Int).SetBytes(h[:])}

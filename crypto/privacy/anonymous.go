@@ -21,15 +21,15 @@ func NewAnonymousInputSlot(outputSlot *AnonymousSlot) *AnonymousSlot {
 	return slot
 }
 
-func (base *AnonymousBase) NewAnonymousOutputSlot(value, r *big.Int, solvable bool, contractMode uint8,  c ContractSlot) (*AnonymousSlot, error) {
+func (base *AnonymousBase) NewAnonymousOutputSlot(a *ActualValue, contractMode uint8,  c ContractSlot) (*AnonymousSlot, error) {
 	slot := new(AnonymousSlot).Init()
 
 	mode := common.Anonymous | common.OutputSlot | contractMode
-	if solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
+	if a.solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
 	_ = slot.SetMode(mode)
 	slot.SetBase(base)
-	slot.SetValue(value, r)
-	slot.AnonymousZK, _ = slot.Proof(value, r, slot.AnonymousValue)
+	slot.SetValue(a)
+	slot.AnonymousZK, _ = slot.Proof(a.v, a.r, slot.AnonymousValue)
 
 	if contractMode != common.NoneContractSlot {
 		if c == nil {return nil, errors.NewNonContractSlotError()}
@@ -65,37 +65,42 @@ func (slot *AnonymousSlot) ZKs() ZKs {return slot.AnonymousZK}
 
 func (slot *AnonymousSlot) Bytes() []byte {
 	var bytes []byte
-	if slot.mode & common.TxSlotKind == common.InputSlot {
-		if slot.mode & common.Solvability == common.Solvable {
-			bytes = make([]byte, common.AnonymousInputSolvableSlotLength)
-			copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousSolvableValueLength], slot.AnonymousValue.Bytes())
+	if slot.mode & common.Payablity == common.Payable {
+		if slot.mode & common.TxSlotKind == common.InputSlot {
+			if slot.mode & common.Solvability == common.Solvable {
+				bytes = make([]byte, common.AnonymousInputSolvableSlotLength)
+				copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousSolvableValueLength], slot.AnonymousValue.Bytes())
+			} else {
+				bytes = make([]byte, common.AnonymousInputNonSolvableSlotLength)
+				copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousNonSolvableValueLength], slot.AnonymousValue.Bytes())
+			}
 		} else {
-			bytes = make([]byte, common.AnonymousInputNonSolvableSlotLength)
-			copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousNonSolvableValueLength], slot.AnonymousValue.Bytes())
+			var contractLength int
+			var contractBytes []byte
+			if slot.mode & common.ContractSlotMode != common.NoneContractSlot {
+				contractBytes = slot.ContractSlot.Bytes()
+				contractLength = len(contractBytes)
+			}
+			if slot.mode & common.Solvability == common.Solvable {
+				bytes = make([]byte, common.AnonymousOutputSolvableSlotLength+contractLength)
+				copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousSolvableValueLength], slot.AnonymousValue.Bytes())
+				copy(bytes[common.AnonymousOutputSolvableSlotLength-common.AnonymousZKsLength:common.AnonymousOutputSolvableSlotLength], slot.AnonymousZK.Bytes())
+				if contractLength > 0 {
+					copy(bytes[common.AnonymousOutputSolvableSlotLength:], contractBytes)
+				}
+			} else {
+				bytes = make([]byte, common.AnonymousOutputNonSolvableSlotLength+contractLength)
+				copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousNonSolvableValueLength], slot.AnonymousValue.Bytes())
+				copy(bytes[common.AnonymousOutputNonSolvableSlotLength - common.AnonymousZKsLength:common.AnonymousOutputNonSolvableSlotLength], slot.AnonymousZK.Bytes())
+				if contractLength > 0 {
+					copy(bytes[common.AnonymousOutputNonSolvableSlotLength:], contractBytes)
+				}
+			}
 		}
 	} else {
-		var contractLength int
-		var contractBytes []byte
-		if slot.mode & common.ContractSlotMode != common.NoneContractSlot {
-			contractBytes = slot.ContractSlot.Bytes()
-			contractLength = len(contractBytes)
-		}
-		if slot.mode & common.Solvability == common.Solvable {
-			bytes = make([]byte, common.AnonymousOutputSolvableSlotLength+contractLength)
-			copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousSolvableValueLength], slot.AnonymousValue.Bytes())
-			copy(bytes[common.AnonymousOutputSolvableSlotLength-common.AnonymousZKsLength:common.AnonymousOutputSolvableSlotLength], slot.AnonymousZK.Bytes())
-			if contractLength > 0 {
-				copy(bytes[common.AnonymousOutputSolvableSlotLength:], contractBytes)
-			}
-		} else {
-			bytes = make([]byte, common.AnonymousOutputNonSolvableSlotLength+contractLength)
-			copy(bytes[1+common.AnonymousBaseLength:1+common.AnonymousBaseLength+common.AnonymousNonSolvableValueLength], slot.AnonymousValue.Bytes())
-			copy(bytes[common.AnonymousOutputNonSolvableSlotLength - common.AnonymousZKsLength:common.AnonymousOutputNonSolvableSlotLength], slot.AnonymousZK.Bytes())
-			if contractLength > 0 {
-				copy(bytes[common.AnonymousOutputNonSolvableSlotLength:], contractBytes)
-			}
-		}
+		bytes = make([]byte, 1+common.AnonymousBaseLength)
 	}
+
 	bytes[0] = slot.mode
 	copy(bytes[1:1+common.AnonymousBaseLength], slot.AnonymousBase.Bytes())
 	return bytes
@@ -103,7 +108,7 @@ func (slot *AnonymousSlot) Bytes() []byte {
 
 func (slot *AnonymousSlot) SetBytes(b []byte) (*AnonymousSlot, error) {
 	bLen := len(b)
-	if bLen < common.AnonymousInputNonSolvableSlotLength {return nil, errors.NewWrongInputLength(bLen)}
+	if bLen < 1+common.AnonymousBaseLength {return nil, errors.NewWrongInputLength(bLen)}
 	mode := b[0]
 	slot.mode = mode
 
@@ -112,21 +117,23 @@ func (slot *AnonymousSlot) SetBytes(b []byte) (*AnonymousSlot, error) {
 	err := slot.AnonymousBase.SetBytes(b[start:end])
 	if err != nil {return nil, err}
 
-	start = end
-	if mode & common.Solvability == common.Solvable {
-		end = start+common.AnonymousSolvableValueLength
-	} else {
-		end = start+common.AnonymousNonSolvableValueLength
-	}
-	_, err = slot.AnonymousValue.SetBytes(b[start:end])
-	if err != nil {return nil, err}
-
-	if mode & common.TxSlotKind == common.OutputSlot {
+	if mode & common.Payablity == common.Payable {
 		start = end
-		end = start + common.AnonymousZKsLength
-		slot.AnonymousZK = new(AnonymousZK)
-		err = slot.AnonymousZK.SetBytes(b[start:end])
+		if mode & common.Solvability == common.Solvable {
+			end = start+common.AnonymousSolvableValueLength
+		} else {
+			end = start+common.AnonymousNonSolvableValueLength
+		}
+		_, err = slot.AnonymousValue.SetBytes(b[start:end])
 		if err != nil {return nil, err}
+
+		if mode & common.TxSlotKind == common.OutputSlot {
+			start = end
+			end = start + common.AnonymousZKsLength
+			slot.AnonymousZK = new(AnonymousZK)
+			err = slot.AnonymousZK.SetBytes(b[start:end])
+			if err != nil {return nil, err}
+		}
 	}
 
 	return slot, nil
@@ -140,10 +147,7 @@ func (slot *AnonymousSlot) SetMode(mode uint8) error {
 
 func (slot *AnonymousSlot) SetBase(base *AnonymousBase) {slot.AnonymousBase = base}
 
-func (slot *AnonymousSlot) SetValue(v, r *big.Int) {
-	solvable := slot.mode & common.Solvability == common.Solvable
-	slot.AnonymousValue = slot.AnonymousBase.SetValue(v, r, solvable)
-}
+func (slot *AnonymousSlot) SetValue(a *ActualValue) {slot.AnonymousValue = slot.AnonymousBase.SetValue(a)}
 
 func (slot *AnonymousSlot) SetSelfValue(value *AnonymousValue) {slot.AnonymousValue = value}
 
@@ -177,10 +181,10 @@ func (base *AnonymousBase) SetBytes(b []byte) error {
 	return nil
 }
 
-func (base *AnonymousBase) SetValue(v, r *big.Int, solvable bool) *AnonymousValue {
-	c := new(crypto.Commitment).FixedSet(base.g, base.h, v, r)
-	if solvable {
-		d := new(crypto.Commitment).SetIntByGenerator(base.g, r)
+func (base *AnonymousBase) SetValue(a *ActualValue) *AnonymousValue {
+	c := new(crypto.Commitment).FixedSet(base.g, base.h, a.v, a.r)
+	if a.solvable {
+		d := new(crypto.Commitment).SetIntByGenerator(base.g, a.r)
 		return &AnonymousValue{c,d}
 	} else {
 		return &AnonymousValue{c,nil}
@@ -216,7 +220,9 @@ func (base *AnonymousBase) Check(value *AnonymousValue, zk *AnonymousZK) bool {
 
 type AnonymousValue struct {c, d *crypto.Commitment}
 
-func (value *AnonymousValue) ValueMode() uint8 {return common.Anonymous}
+func (value *AnonymousValue) ValueMode() uint8 {
+	if value.Solvable() {return common.Anonymous | common.Solvable} else {return common.Anonymous | common.NonSolvable}
+}
 
 func (value *AnonymousValue) Solvable() bool {return value.d != nil}
 

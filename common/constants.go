@@ -57,6 +57,10 @@ const Solvability uint8 = 0b00000100
 const Solvable uint8 = 0b00000100
 const NonSolvable uint8 = 0b00000000
 
-const IsGasSlot uint8 = 0b00000011
+const Payablity uint8 = 0b00000010
+const Payable uint8 = 0b00000010
+const NonPayable uint8 = 0b00000000
+
+const IsGasSlot uint8 = 0b00000001
 
 

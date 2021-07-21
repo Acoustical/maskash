@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"math/big"
 	"os"
+	"reflect"
 )
 
 func Handle(err error) {
@@ -129,7 +130,7 @@ func (err *CannotSolveError) Error() string {
 	return fmt.Sprintf("This value can not be solved.\n")
 }
 
-// CannotFindValueError solve error
+// CannotFindValueError can not find value
 type CannotFindValueError struct {}
 
 func NewCannotFindValueError() *CannotFindValueError {
@@ -138,4 +139,37 @@ func NewCannotFindValueError() *CannotFindValueError {
 
 func (err *CannotFindValueError) Error() string {
 	return fmt.Sprintf("The answer of this commitment can not be found.\n")
+}
+
+// AuxiliarySizeNotMatchError solve error
+type AuxiliarySizeNotMatchError struct {}
+
+func NewAuxiliarySizeNotMatchError() *AuxiliarySizeNotMatchError {
+	return &AuxiliarySizeNotMatchError{}
+}
+
+func (err *AuxiliarySizeNotMatchError) Error() string {
+	return fmt.Sprintf("Auxiliary Size does not match.\n")
+}
+
+// AuxiliaryTypeNotMatchError aux type not match
+type AuxiliaryTypeNotMatchError struct {a interface{}}
+
+func NewAuxiliaryTypeNotMatchError(a interface{}) *AuxiliaryTypeNotMatchError {
+	return &AuxiliaryTypeNotMatchError{a}
+}
+
+func (err AuxiliaryTypeNotMatchError) Error() string {
+	return fmt.Sprintf("The type %s does not match.\n", reflect.TypeOf(err.a))
+}
+
+// ZKCheckNotPassError zk check not pass
+type ZKCheckNotPassError struct {}
+
+func NewZKCheckNotPassError() *ZKCheckNotPassError {
+	return &ZKCheckNotPassError{}
+}
+
+func (err ZKCheckNotPassError) Error() string {
+	return fmt.Sprintf("ZK check not pass.")
 }

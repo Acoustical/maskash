@@ -2,32 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="2e4af88a-bcd8-4d54-b534-16c63d33733b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/crypto/basic.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/pedersen_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/anonymous.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/anonymous_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/contract.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/obscure.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/plaintext.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/plaintext_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/privateKey.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/secret.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/secret_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/slot.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/zkproofs/rangeProof.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/zkproofs/rangeProofGenerators.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/zkproofs/rangeProof_test.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/zkproofs/signature.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/zkproofs/signature_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/state.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/crypto/privacy/actualValue.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/crypto/privacy/auxiliary.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/crypto/privacy/valueOpts.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/common/constants.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/constants.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/hash.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/hash.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/crypto/pedersen.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/pedersen.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/RangeProof.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/RangeProof_test.go" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/formatProof.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/formatProof.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/formatProof_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/formatProof_test.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof.go" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/anonymous.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/anonymous.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/secret.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/secret.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/errors/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/errors/errors.go" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -74,7 +58,7 @@
     <property name="go.import.settings.migrated" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/code/go-ethereum" />
+    <property name="last_opened_file_path" value="$USER_HOME$/code/chain" />
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">

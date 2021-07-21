@@ -76,6 +76,11 @@ func (g *Generator) Bytes() []byte {
 	return ToBytes(g.G1)
 }
 
+
+func (g *Generator) Cmp(gn *Generator) bool {
+	return g.String() == gn.String()
+}
+
 // SetBytes sets c to the result of converting the output of Marshal back into a
 // group element and then returns c
 func (g *Generator) SetBytes(b []byte) *Generator {
@@ -151,6 +156,12 @@ func (c *Commitment) SetIntByGenerator(g *Generator, k *big.Int) *Commitment {
 // AddBy sets c to c+a and returns c
 func (c *Commitment) AddBy(a *Commitment) *Commitment {
 	c.G1.Add(c.G1, a.G1)
+	return c
+}
+
+// SubBy sets c to c-a and returns c
+func (c *Commitment) SubBy(a *Commitment) *Commitment {
+	c.G1.Add(c.G1, new(bn256.G1).Neg(a.G1))
 	return c
 }
 

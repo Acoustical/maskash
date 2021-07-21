@@ -21,15 +21,15 @@ func NewSecretInputSlot(outputSlot *SecretSlot) *SecretSlot {
 	return slot
 }
 
-func (base *SecretBase) NewSecretOutputSlot(value, r *big.Int, solvable bool, contractMode uint8,  c ContractSlot) (*SecretSlot, error) {
+func (base *SecretBase) NewSecretOutputSlot(a *ActualValue, contractMode uint8,  c ContractSlot) (*SecretSlot, error) {
 	slot := new(SecretSlot).Init()
 
 	mode := common.Secret | common.OutputSlot | contractMode
-	if solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
+	if a.solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
 	_ = slot.SetMode(mode)
 	slot.SetBase(base)
-	slot.SetValue(value, r)
-	slot.SecretZK, _ = slot.Proof(value, r, slot.SecretValue)
+	slot.SetValue(a)
+	slot.SecretZK, _ = slot.Proof(a.v, a.r, slot.SecretValue)
 
 	if contractMode != common.NoneContractSlot {
 		if c == nil {return nil, errors.NewNonContractSlotError()}
@@ -65,36 +65,40 @@ func (slot *SecretSlot) ZKs() ZKs {return slot.SecretZK}
 
 func (slot *SecretSlot) Bytes() []byte {
 	var bytes []byte
-	if slot.mode & common.TxSlotKind == common.InputSlot {
-		if slot.mode & common.Solvability == common.Solvable {
-			bytes = make([]byte, common.SecretInputSolvableSlotLength)
-			copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretSolvableValueLength], slot.SecretValue.Bytes())
+	if slot.mode & common.Payablity == common.Payable {
+		if slot.mode & common.TxSlotKind == common.InputSlot {
+			if slot.mode & common.Solvability == common.Solvable {
+				bytes = make([]byte, common.SecretInputSolvableSlotLength)
+				copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretSolvableValueLength], slot.SecretValue.Bytes())
+			} else {
+				bytes = make([]byte, common.SecretInputNonSolvableSlotLength)
+				copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretNonSolvableValueLength], slot.SecretValue.Bytes())
+			}
 		} else {
-			bytes = make([]byte, common.SecretInputNonSolvableSlotLength)
-			copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretNonSolvableValueLength], slot.SecretValue.Bytes())
+			var contractLength int
+			var contractBytes []byte
+			if slot.mode & common.ContractSlotMode != common.NoneContractSlot {
+				contractBytes = slot.ContractSlot.Bytes()
+				contractLength = len(contractBytes)
+			}
+			if slot.mode & common.Solvability == common.Solvable {
+				bytes = make([]byte, common.SecretOutputSolvableSlotLength+contractLength)
+				copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretSolvableValueLength], slot.SecretValue.Bytes())
+				copy(bytes[common.SecretOutputSolvableSlotLength-common.SecretZKsLength:common.SecretOutputSolvableSlotLength], slot.SecretZK.Bytes())
+				if contractLength > 0 {
+					copy(bytes[common.SecretOutputSolvableSlotLength:], contractBytes)
+				}
+			} else {
+				bytes = make([]byte, common.SecretOutputNonSolvableSlotLength+contractLength)
+				copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretNonSolvableValueLength], slot.SecretValue.Bytes())
+				copy(bytes[common.SecretOutputNonSolvableSlotLength - common.SecretZKsLength:common.SecretOutputNonSolvableSlotLength], slot.SecretZK.Bytes())
+				if contractLength > 0 {
+					copy(bytes[common.SecretOutputNonSolvableSlotLength:], contractBytes)
+				}
+			}
 		}
 	} else {
-		var contractLength int
-		var contractBytes []byte
-		if slot.mode & common.ContractSlotMode != common.NoneContractSlot {
-			contractBytes = slot.ContractSlot.Bytes()
-			contractLength = len(contractBytes)
-		}
-		if slot.mode & common.Solvability == common.Solvable {
-			bytes = make([]byte, common.SecretOutputSolvableSlotLength+contractLength)
-			copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretSolvableValueLength], slot.SecretValue.Bytes())
-			copy(bytes[common.SecretOutputSolvableSlotLength-common.SecretZKsLength:common.SecretOutputSolvableSlotLength], slot.SecretZK.Bytes())
-			if contractLength > 0 {
-				copy(bytes[common.SecretOutputSolvableSlotLength:], contractBytes)
-			}
-		} else {
-			bytes = make([]byte, common.SecretOutputNonSolvableSlotLength+contractLength)
-			copy(bytes[1+common.SecretBaseLength:1+common.SecretBaseLength+common.SecretNonSolvableValueLength], slot.SecretValue.Bytes())
-			copy(bytes[common.SecretOutputNonSolvableSlotLength - common.SecretZKsLength:common.SecretOutputNonSolvableSlotLength], slot.SecretZK.Bytes())
-			if contractLength > 0 {
-				copy(bytes[common.SecretOutputNonSolvableSlotLength:], contractBytes)
-			}
-		}
+		bytes = make([]byte, 1+common.SecretBaseLength)
 	}
 	bytes[0] = slot.mode
 	copy(bytes[1:1+common.SecretBaseLength], slot.SecretBase.Bytes())
@@ -103,7 +107,7 @@ func (slot *SecretSlot) Bytes() []byte {
 
 func (slot *SecretSlot) SetBytes(b []byte) (*SecretSlot, error) {
 	bLen := len(b)
-	if bLen < common.SecretInputNonSolvableSlotLength {return nil, errors.NewWrongInputLength(bLen)}
+	if bLen < 1+common.SecretBaseLength {return nil, errors.NewWrongInputLength(bLen)}
 	mode := b[0]
 	slot.mode = mode
 
@@ -112,21 +116,23 @@ func (slot *SecretSlot) SetBytes(b []byte) (*SecretSlot, error) {
 	err := slot.SecretBase.SetBytes(b[start:end])
 	if err != nil {return nil, err}
 
-	start = end
-	if mode & common.Solvability == common.Solvable {
-		end = start+common.SecretSolvableValueLength
-	} else {
-		end = start+common.SecretNonSolvableValueLength
-	}
-	_, err = slot.SecretValue.SetBytes(b[start:end])
-	if err != nil {return nil, err}
-
-	if mode & common.TxSlotKind == common.OutputSlot {
+	if mode & common.Payablity == common.Payable {
 		start = end
-		end = start + common.SecretZKsLength
-		slot.SecretZK = new(SecretZK)
-		err = slot.SecretZK.SetBytes(b[start:end])
+		if mode & common.Solvability == common.Solvable {
+			end = start+common.SecretSolvableValueLength
+		} else {
+			end = start+common.SecretNonSolvableValueLength
+		}
+		_, err = slot.SecretValue.SetBytes(b[start:end])
 		if err != nil {return nil, err}
+
+		if mode & common.TxSlotKind == common.OutputSlot {
+			start = end
+			end = start + common.SecretZKsLength
+			slot.SecretZK = new(SecretZK)
+			err = slot.SecretZK.SetBytes(b[start:end])
+			if err != nil {return nil, err}
+		}
 	}
 
 	return slot, nil
@@ -140,10 +146,7 @@ func (slot *SecretSlot) SetMode(mode uint8) error {
 
 func (slot *SecretSlot) SetBase(base *SecretBase) {slot.SecretBase = base}
 
-func (slot *SecretSlot) SetValue(v, r *big.Int) {
-	solvable := slot.mode & common.Solvability == common.Solvable
-	slot.SecretValue = slot.SecretBase.SetValue(v, r, solvable)
-}
+func (slot *SecretSlot) SetValue(a *ActualValue) {slot.SecretValue = slot.SecretBase.SetValue(a)}
 
 func (slot *SecretSlot) SetSelfValue(value *SecretValue) {slot.SecretValue = value}
 
@@ -160,11 +163,11 @@ func (base *SecretBase) SetBytes(b []byte) error {
 	return nil
 }
 
-func (base *SecretBase) SetValue(v, r *big.Int, solvable bool) *SecretValue {
+func (base *SecretBase) SetValue(a *ActualValue) *SecretValue {
 	g := new(crypto.Generator).Init(big.NewInt(1))
-	c := new(crypto.Commitment).FixedSet(g, base.h, v, r)
-	if solvable {
-		d := new(crypto.Commitment).SetIntByGenerator(g, r)
+	c := new(crypto.Commitment).FixedSet(g, base.h, a.v, a.r)
+	if a.solvable {
+		d := new(crypto.Commitment).SetIntByGenerator(g, a.r)
 		return &SecretValue{c,d}
 	} else {
 		return &SecretValue{c,nil}
@@ -203,7 +206,9 @@ func (base *SecretBase) Check(value *SecretValue, zk *SecretZK) bool {
 
 type SecretValue struct {c, d *crypto.Commitment}
 
-func (value *SecretValue) ValueMode() uint8 {return common.Secret}
+func (value *SecretValue) ValueMode() uint8 {
+	if value.Solvable() {return common.Secret | common.Solvable} else {return common.Secret | common.NonSolvable}
+}
 
 func (value *SecretValue) Solvable() bool {return value.d != nil}
 
