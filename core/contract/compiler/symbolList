@@ -1,0 +1,65 @@
+(num) : num
+(id) : id
+(nextLine) : nextLine
+MASK : mask
+true : boolNum : 1
+false : boolNum : 0
+knowledge : id : 0
+msg : id : 1
+sender : id : 2
+receiver : id : 3
+public : cType : 0
+private : cTYpe : 1
+plaintext : privacy : 0
+secret : privacy : 1
+anonymous : privacy : 2
+base : base
+int : var : 0
+string : var : 2
+bool : var : 3
+balance : var : 128
+const : const
+map : map
+struct : struct
+func : func
+payable : payable
+view : view
+require : require
+from : from
+send : send
+to : to
+return : return
+tell : tell
+publish : publish
+constructor : constructor
+if : if
+else : else
+elif : elif
+in : in
+continue : continue
+break : break
++ : +
+- : -
+* : *
+/ : /
+== : ==
+> : >
+< : <
+>= : >=
+<= : <=
+= : =
+>> : >>
+<< : <<
+% : %
+!= : !=
+and : and
+or : or
+! : !
+; : ;
+, : ,
+. : .
+=> : =>
+( : (
+) : )
+[ : [
+] : ]

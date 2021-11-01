@@ -34,7 +34,7 @@ func Add(aux *AuxiliaryVariables, v ...Value) (Value, error) {
 		if anonymousLen > 0 {
 			return nil, errors.NewAuxiliarySizeNotMatchError()
 		}
-		if vLen == 0 {return &PlaintextValue{nil, zero}, nil}
+		if vLen == 0 {return &PlaintextValue{zero}, nil}
 		if vLen == 1 {return v[0], nil}
 		if secretLen > 0 {
 			var d *crypto.Commitment
@@ -46,7 +46,7 @@ func Add(aux *AuxiliaryVariables, v ...Value) (Value, error) {
 			}
 			return &SecretValue{c, d}, nil
 		} else {
-			return &PlaintextValue{nil, plaintextSum}, nil
+			return &PlaintextValue{plaintextSum}, nil
 		}
 	} else if aux.Match(1,0,0) {
 		if anonymousLen == 0 || secretLen > 0 {
@@ -163,6 +163,7 @@ func Add(aux *AuxiliaryVariables, v ...Value) (Value, error) {
 	}
 }
 
+/*
 func GenAddAuxiliary(b []Base, v, r []*big.Int, answerBase Base, solvable bool) (*AuxiliaryVariables, *big.Int, *big.Int, error) {
 	bLen, vLen, rLen := len(b), len(v), len(r)
 	if bLen != vLen {return nil, nil, nil, errors.NewLengthNotMatchError(bLen, vLen)}
@@ -172,9 +173,15 @@ func GenAddAuxiliary(b []Base, v, r []*big.Int, answerBase Base, solvable bool) 
 	pBases, sBases, aBases := make([]*PlaintextBase, 0), make([]*SecretBase, 0), make([]*AnonymousBase, 0)
 	for i := 0; i < bLen; i++ {
 		switch bs := b[i].(type) {
+		case *PlaintextBase:
+
+		case *SecretBase:
+
+		case *AnonymousBase:
 
 		}
 	}
 }
+ */
 
 

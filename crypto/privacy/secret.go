@@ -21,18 +21,18 @@ func NewSecretInputSlot(outputSlot *SecretSlot) *SecretSlot {
 	return slot
 }
 
-func (base *SecretBase) NewSecretOutputSlot(a *ActualValue, contractMode uint8,  c ContractSlot) (*SecretSlot, error) {
+func (base *SecretBase) NewSecretOutputSlot(k *Knowledge, contractMode uint8,  c ContractSlot) (*SecretSlot, error) {
 	slot := new(SecretSlot).Init()
 
 	mode := common.Secret | common.OutputSlot | contractMode
-	if a.solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
+	if k.solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
 	_ = slot.SetMode(mode)
 	slot.SetBase(base)
-	slot.SetValue(a)
-	slot.SecretZK, _ = slot.Proof(a.v, a.r, slot.SecretValue)
+	slot.SetValue(k)
+	slot.SecretZK, _ = slot.Proof(k.v, k.r, slot.SecretValue)
 
 	if contractMode != common.NoneContractSlot {
-		if c == nil {return nil, errors.NewNonContractSlotError()}
+		if c  == nil {return nil, errors.NewNonContractSlotError()}
 		slot.ContractSlot = c
 	}
 
@@ -146,7 +146,7 @@ func (slot *SecretSlot) SetMode(mode uint8) error {
 
 func (slot *SecretSlot) SetBase(base *SecretBase) {slot.SecretBase = base}
 
-func (slot *SecretSlot) SetValue(a *ActualValue) {slot.SecretValue = slot.SecretBase.SetValue(a)}
+func (slot *SecretSlot) SetValue(k *Knowledge) {slot.SecretValue = slot.SecretBase.SetValue(k)}
 
 func (slot *SecretSlot) SetSelfValue(value *SecretValue) {slot.SecretValue = value}
 
@@ -163,11 +163,11 @@ func (base *SecretBase) SetBytes(b []byte) error {
 	return nil
 }
 
-func (base *SecretBase) SetValue(a *ActualValue) *SecretValue {
+func (base *SecretBase) SetValue(k *Knowledge) *SecretValue {
 	g := new(crypto.Generator).Init(big.NewInt(1))
-	c := new(crypto.Commitment).FixedSet(g, base.h, a.v, a.r)
-	if a.solvable {
-		d := new(crypto.Commitment).SetIntByGenerator(g, a.r)
+	c := new(crypto.Commitment).FixedSet(g, base.h, k.v, k.r)
+	if k.solvable {
+		d := new(crypto.Commitment).SetIntByGenerator(g, k.r)
 		return &SecretValue{c,d}
 	} else {
 		return &SecretValue{c,nil}

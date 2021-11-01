@@ -37,7 +37,6 @@ func RandomPoints(n int) ([]*Generator, []*big.Int, error) {
 	for i := 0; i < n; i++ {
 		g[i] = new(Generator).Init(k[i])
 	}
-
 	return g, k, nil
 }
 

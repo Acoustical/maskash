@@ -12,8 +12,9 @@ func (prv *PrivateKey) NewPlaintextInputSlot(nonce, value *big.Int) *PlaintextSl
 	slot := new(PlaintextSlot).Init()
 
 	_ = slot.SetMode( common.Plaintext | common.InputSlot | common.NoneContractSlot )
+	slot.nonce = nonce
 	slot.SetBase(prv.GenPlaintextBase())
-	slot.SetValue(nonce, value)
+	slot.SetValue(value)
 	slot.PlaintextZK, _ = slot.Proof(prv, slot.PlaintextValue)
 
 	return slot
@@ -24,7 +25,7 @@ func (base *PlaintextBase) NewPlaintextOutputSlot(value *big.Int, contractMode u
 
 	_ = slot.SetMode( common.Plaintext | common.OutputSlot | contractMode )
 	slot.SetBase(base)
-	slot.SetValue(nil, value)
+	slot.SetValue(value)
 
 	if contractMode != common.NoneContractSlot {
 		if c == nil {return nil, errors.NewNonContractSlotError()}
@@ -35,6 +36,7 @@ func (base *PlaintextBase) NewPlaintextOutputSlot(value *big.Int, contractMode u
 
 type PlaintextSlot struct {
 	mode uint8
+	nonce *big.Int
 	*PlaintextBase
 	*PlaintextValue
 	*PlaintextZK
@@ -51,7 +53,7 @@ func (slot *PlaintextSlot) SlotMode() uint8 {return slot.mode}
 
 func (slot *PlaintextSlot) CheckZKs() bool {return slot.PlaintextBase.Check(slot.PlaintextValue, slot.PlaintextZK)}
 
-func (slot *PlaintextSlot) Nonce() (*big.Int, error) {return slot.PlaintextValue.nonce, nil}
+func (slot *PlaintextSlot) Nonce() (*big.Int, error) {return slot.nonce, nil}
 
 func (slot *PlaintextSlot) Base() Base {return slot.PlaintextBase}
 
@@ -66,17 +68,22 @@ func (slot *PlaintextSlot) Bytes() []byte {
 		totalLength = common.PlaintextInputSlotLength
 		bytes = make([]byte, totalLength)
 
+		nonceBytes := slot.nonce.Bytes()
 		baseBytes := slot.PlaintextBase.Bytes()
 		valueBytes := slot.PlaintextValue.Bytes()
 		zkBytes := slot.PlaintextZK.Bytes()
 		bytes[0] = slot.mode
 
 		start := 1
-		end := start+common.PlaintextBaseLength
+		end := start+common.PlaintextNonceLength
+		copy(bytes[start:end], nonceBytes)
+
+		start = end
+		end = start+common.PlaintextBaseLength
 		copy(bytes[start:end], baseBytes)
 
 		start = end
-		end = start + common.PlaintextInputValueLength
+		end = start + common.PlaintextValueLength
 		copy(bytes[start:end], valueBytes)
 
 		start = end
@@ -101,7 +108,7 @@ func (slot *PlaintextSlot) Bytes() []byte {
 		copy(bytes[start:end], baseBytes)
 
 		start = end
-		end = start + common.PlaintextOutputValueLength
+		end = start + common.PlaintextValueLength
 		copy(bytes[start:end], valueBytes)
 
 		if contractLength > 0 {
@@ -128,12 +135,16 @@ func (slot *PlaintextSlot) SetBytes(b []byte) (*PlaintextSlot, error) {
 		slot.PlaintextZK = new(PlaintextZK)
 
 		start := 1
-		end := start+common.PlaintextBaseLength
+		end := start+common.PlaintextNonceLength
+		slot.nonce.SetBytes(b[start:end])
+
+		start = end
+		end = start+common.PlaintextBaseLength
 		err := slot.PlaintextBase.SetBytes(b[start:end])
 		if err != nil {return nil, err}
 
 		start = end
-		end = start + common.PlaintextInputValueLength
+		end = start + common.PlaintextValueLength
 		_, err = slot.PlaintextValue.SetBytes(b[start:end])
 		if err != nil {return nil, err}
 
@@ -157,7 +168,7 @@ func (slot *PlaintextSlot) SetBytes(b []byte) (*PlaintextSlot, error) {
 		if err != nil {return nil, err}
 
 		start = end
-		end = start + common.PlaintextOutputValueLength
+		end = start + common.PlaintextValueLength
 		_, err = slot.PlaintextValue.SetBytes(b[start:end])
 		if err != nil {return nil, err}
 
@@ -179,7 +190,7 @@ func (slot *PlaintextSlot) SetMode(mode uint8) error {
 
 func (slot *PlaintextSlot) SetBase(base *PlaintextBase) {slot.PlaintextBase = base}
 
-func (slot *PlaintextSlot) SetValue(nonce, value *big.Int) {slot.PlaintextValue = slot.PlaintextBase.SetValue(nonce, value)}
+func (slot *PlaintextSlot) SetValue(value *big.Int) {slot.PlaintextValue = slot.PlaintextBase.SetValue(value)}
 
 type PlaintextBase struct {addr crypto.Address}
 
@@ -194,7 +205,7 @@ func (base *PlaintextBase) SetBytes(b []byte) error {
 	return nil
 }
 
-func (base *PlaintextBase) SetValue(nonce, v *big.Int) *PlaintextValue {return &PlaintextValue{nonce, v}}
+func (base *PlaintextBase) SetValue(v *big.Int) *PlaintextValue {return &PlaintextValue{v}}
 
 func (base *PlaintextBase) Proof(prv *PrivateKey, value *PlaintextValue) (*PlaintextZK, error) {
 	e := crypto.Hash_(base, value).BigInt()
@@ -214,7 +225,7 @@ func (base *PlaintextBase) Check(value *PlaintextValue, zk *PlaintextZK) bool {
 	return zk.sig.Check()
 }
 
-type PlaintextValue struct {nonce, v *big.Int}
+type PlaintextValue struct {v *big.Int}
 
 func (value *PlaintextValue) ValueMode() uint8 {return common.Plaintext}
 
@@ -225,33 +236,17 @@ func (value *PlaintextValue) Solve(prv *PrivateKey) (*big.Int, error) {return va
 func (value *PlaintextValue) Bytes() []byte {
 	zqBytes := common.Bn256ZqBits / common.ByteBits
 	var bytes []byte
-	if value.nonce == nil {
-		bytes = make([]byte, common.PlaintextOutputValueLength)
-		vBytes := value.v.Bytes()
-		copy(bytes[zqBytes-len(vBytes):], vBytes)
-	} else {
-		bytes = make([]byte, common.PlaintextInputValueLength)
-
-		nonceBytes := value.nonce.Bytes()
-		vBytes := value.v.Bytes()
-
-		copy(bytes[zqBytes-len(nonceBytes):], nonceBytes)
-		copy(bytes[2*zqBytes-len(vBytes):], vBytes)
-	}
+	bytes = make([]byte, common.PlaintextValueLength)
+	vBytes := value.v.Bytes()
+	copy(bytes[zqBytes-len(vBytes):], vBytes)
 
 	return bytes
 }
 
 func (value *PlaintextValue) SetBytes(b []byte) (*PlaintextValue, error){
 	bLen := len(b)
-	if bLen != common.PlaintextInputValueLength && bLen != common.PlaintextOutputValueLength {return nil, errors.NewWrongInputLength(bLen)}
-	if bLen == common.PlaintextInputValueLength {
-		zqBytes := common.Bn256ZqBits / common.ByteBits
-		value.nonce = new(big.Int).SetBytes(b[:zqBytes])
-		value.v = new(big.Int).SetBytes(b[zqBytes:])
-	} else {
-		value.v = new(big.Int).SetBytes(b)
-	}
+	if bLen != common.PlaintextValueLength  {return nil, errors.NewWrongInputLength(bLen)}
+	value.v = new(big.Int).SetBytes(b)
 	return value, nil
 }
 

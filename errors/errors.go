@@ -173,3 +173,16 @@ func NewZKCheckNotPassError() *ZKCheckNotPassError {
 func (err ZKCheckNotPassError) Error() string {
 	return fmt.Sprintf("ZK check not pass.")
 }
+
+// ValueRunOffError value run off
+type ValueRunOffError struct {
+	v *big.Int
+}
+
+func NewValueRunOffError(v *big.Int) *ValueRunOffError {
+	return &ValueRunOffError{v}
+}
+
+func (err *ValueRunOffError) Error() string {
+	return fmt.Sprintf("Value %x out of range.", err.v)
+}

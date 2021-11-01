@@ -3,7 +3,6 @@ package privacy
 import (
 	"fmt"
 	"github.com/Acoustical/maskash/common"
-	"github.com/Acoustical/maskash/crypto"
 	"github.com/Acoustical/maskash/errors"
 	"math/big"
 	"testing"
@@ -21,10 +20,10 @@ func TestAnonymous(t *testing.T) {
 	errors.Handle(err)
 
 	value := big.NewInt(114514)
-	rl, _ := crypto.RandomZq(1)
-	r := rl[0]
+	knowledge, err := new(Knowledge).Init(value, true)
+	errors.Handle(err)
 
-	slot0, err := targetBase.NewAnonymousOutputSlot(value, r, true, common.NoneContractSlot, nil)
+	slot0, err := targetBase.NewAnonymousOutputSlot(knowledge, common.NoneContractSlot, nil)
 	errors.Handle(err)
 
 	if slot0.CheckZKs() {

@@ -1,0 +1,34 @@
+MASK -
+
+public Vote
+    /* this func is for Voting */
+    secret base[10] voters
+    secret int[5] votes
+    // Voters has already been selected
+
+    func JoinVote() bool
+        for int i=0; i<10; i+=1
+            if voters[i] == 0
+                voters[i] = msg.sender
+                return true
+        return false
+
+    func EmitVote(secret int[5] vote) // WHY is that EMIT word in function ?
+        require msg.sender in voters
+        require vote.base == voters
+
+        for int i=0; i<0x5; i+=1
+            require vote[i] == 1 or vote[i] == 0
+            votes[i] += vote[i]
+
+
+    func PublishVote() (int, int)
+        int winner = 0
+        secret int max = votes[0]
+        for int i=1; i<5; i+=1
+            if votes[i] > max
+                max = votes[i]
+                winner = i
+        publish max
+        return winner, max
+

@@ -13,11 +13,11 @@ const FormatProofLength = 3 * Bn256ZqBits / ByteBits
 const RangeProofShortLength = (4 * Bn256PointBits + (2 + 2 * RangeProofShortBits) * Bn256ZqBits) / ByteBits
 
 const PlaintextBaseLength int = 20
-const PlaintextInputValueLength = 2 * Bn256ZqBits / ByteBits
-const PlaintextOutputValueLength = Bn256ZqBits / ByteBits
+const PlaintextNonceLength = Bn256ZqBits / ByteBits
+const PlaintextValueLength = Bn256ZqBits / ByteBits
 const PlaintextZKsLength = (Bn256PointBits + Bn256ZqBits) / ByteBits
-const PlaintextInputSlotLength = 1 + PlaintextBaseLength + PlaintextInputValueLength + PlaintextZKsLength
-const PlaintextOutputSlotLength = 1 + PlaintextBaseLength + PlaintextOutputValueLength
+const PlaintextInputSlotLength = 1 + PlaintextBaseLength + PlaintextNonceLength + PlaintextValueLength + PlaintextZKsLength
+const PlaintextOutputSlotLength = 1 + PlaintextBaseLength + PlaintextValueLength
 
 const SecretBaseLength = Bn256PointBits / ByteBits
 const SecretSolvableValueLength = 2 * Bn256PointBits / ByteBits

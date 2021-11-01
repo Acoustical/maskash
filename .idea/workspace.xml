@@ -1,18 +1,67 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
   <component name="ChangeListManager">
     <list default="true" id="2e4af88a-bcd8-4d54-b534-16c63d33733b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/core/state.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/actualValue.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/auxiliary.go" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/crypto/privacy/valueOpts.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/common/constants_g.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/common.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/errors.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/lexer.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/lexer_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/maps.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/symbolList" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/syntax.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/syntax_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/compiler/test_code.mask" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/lr_table.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/parser.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/productions.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/slr_test.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/status.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/symbol.go" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/table.out" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/core/contract/slr/test.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/maskash.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/maskash.iml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/README.md" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/common/constants.go" beforeDir="false" afterPath="$PROJECT_DIR$/common/constants.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/core/state.go" beforeDir="false" afterPath="$PROJECT_DIR$/core/state.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/basic.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/basic.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/crypto/hash.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/hash.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/crypto/pedersen.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/pedersen.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/pedersen_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/pedersen_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/actualValue.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/knowledge.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/crypto/privacy/anonymous.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/anonymous.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/anonymous_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/anonymous_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/auxiliary.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/auxiliary.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/contract.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/contract.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/obscure.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/obscure.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/plaintext.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/plaintext.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/plaintext_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/plaintext_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/privateKey.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/privateKey.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/crypto/privacy/secret.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/secret.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/secret_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/secret_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/slot.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/slot.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/privacy/valueOpts.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/privacy/valueOpts.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/formatProof.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/formatProof.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/formatProof_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/formatProof_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/linearEquationProof_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/proofs.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/proofs.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/rangeProof.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/rangeProof.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/rangeProofGenerators.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/rangeProofGenerators.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/rangeProof_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/rangeProof_test.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/signature.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/signature.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/crypto/zkproofs/signature_test.go" beforeDir="false" afterPath="$PROJECT_DIR$/crypto/zkproofs/signature_test.go" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/errors/errors.go" beforeDir="false" afterPath="$PROJECT_DIR$/errors/errors.go" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.mod" beforeDir="false" afterPath="$PROJECT_DIR$/go.mod" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/go.sum" beforeDir="false" afterPath="$PROJECT_DIR$/go.sum" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +90,19 @@
   <component name="GoLibraries">
     <option name="indexEntireGoPath" value="false" />
   </component>
+  <component name="HighlightingSettingsPerFile">
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/plaintext.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/secret.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/common/constants.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/core/state.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/valueOpts.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/pedersen.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/anonymous.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/anonymous_test.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/contract.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/crypto/privacy/knowledge.go" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/common/constants_g.go" root0="FORCE_HIGHLIGHTING" />
+  </component>
   <component name="ProjectId" id="1u74xFY97vFidX2rmAgk3CtBzrl" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
@@ -55,10 +117,21 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="go.formatter.settings.were.checked" value="true" />
     <property name="go.import.settings.migrated" value="true" />
+    <property name="go.modules.go.list.on.any.changes.was.set" value="true" />
     <property name="go.sdk.automatically.set" value="true" />
     <property name="go.tried.to.enable.integration.vgo.integrator" value="true" />
-    <property name="last_opened_file_path" value="$USER_HOME$/code/chain" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../chain" />
+    <property name="node.js.detected.package.eslint" value="true" />
+    <property name="node.js.detected.package.tslint" value="true" />
+    <property name="node.js.selected.package.eslint" value="(autodetect)" />
+    <property name="node.js.selected.package.tslint" value="(autodetect)" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/crypto/privacy" />
+    </key>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TypeScriptGeneratedFilesManager">

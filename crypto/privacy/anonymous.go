@@ -21,15 +21,15 @@ func NewAnonymousInputSlot(outputSlot *AnonymousSlot) *AnonymousSlot {
 	return slot
 }
 
-func (base *AnonymousBase) NewAnonymousOutputSlot(a *ActualValue, contractMode uint8,  c ContractSlot) (*AnonymousSlot, error) {
+func (base *AnonymousBase) NewAnonymousOutputSlot(k *Knowledge, contractMode uint8,  c ContractSlot) (*AnonymousSlot, error) {
 	slot := new(AnonymousSlot).Init()
 
 	mode := common.Anonymous | common.OutputSlot | contractMode
-	if a.solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
+	if k.solvable {mode |= common.Solvable} else {mode |= common.NonSolvable}
 	_ = slot.SetMode(mode)
 	slot.SetBase(base)
-	slot.SetValue(a)
-	slot.AnonymousZK, _ = slot.Proof(a.v, a.r, slot.AnonymousValue)
+	slot.SetValue(k)
+	slot.AnonymousZK, _ = slot.Proof(k.v, k.r, slot.AnonymousValue)
 
 	if contractMode != common.NoneContractSlot {
 		if c == nil {return nil, errors.NewNonContractSlotError()}
@@ -147,7 +147,7 @@ func (slot *AnonymousSlot) SetMode(mode uint8) error {
 
 func (slot *AnonymousSlot) SetBase(base *AnonymousBase) {slot.AnonymousBase = base}
 
-func (slot *AnonymousSlot) SetValue(a *ActualValue) {slot.AnonymousValue = slot.AnonymousBase.SetValue(a)}
+func (slot *AnonymousSlot) SetValue(k *Knowledge) {slot.AnonymousValue = slot.AnonymousBase.SetValue(k)}
 
 func (slot *AnonymousSlot) SetSelfValue(value *AnonymousValue) {slot.AnonymousValue = value}
 
@@ -181,10 +181,10 @@ func (base *AnonymousBase) SetBytes(b []byte) error {
 	return nil
 }
 
-func (base *AnonymousBase) SetValue(a *ActualValue) *AnonymousValue {
-	c := new(crypto.Commitment).FixedSet(base.g, base.h, a.v, a.r)
-	if a.solvable {
-		d := new(crypto.Commitment).SetIntByGenerator(base.g, a.r)
+func (base *AnonymousBase) SetValue(k *Knowledge) *AnonymousValue {
+	c := new(crypto.Commitment).FixedSet(base.g, base.h, k.v, k.r)
+	if k.solvable {
+		d := new(crypto.Commitment).SetIntByGenerator(base.g, k.r)
 		return &AnonymousValue{c,d}
 	} else {
 		return &AnonymousValue{c,nil}
